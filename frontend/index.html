@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CybRisk Guardian</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Animated Grid Background -->
+  <div class="grid-bg"></div>
+  <div class="scanline"></div>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="shield-icon">🛡️</span>
+      <span class="brand-text">CYBRISK <span class="accent">GUARDIAN</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">HOME</a>
+      <a href="pages/analyzer.html" class="nav-link">SCAM ANALYZER</a>
+      <a href="pages/training.html" class="nav-link">TRAINING</a>
+      <a href="pages/damage.html" class="nav-link">DAMAGE CONTROL</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="tag-line">HUMAN FIREWALL SYSTEM v2.0</div>
+      <h1 class="hero-title">
+        DEFEND YOUR<br/>
+        <span class="accent glitch" data-text="DIGITAL LIFE">DIGITAL LIFE</span>
+      </h1>
+      <p class="hero-sub">
+        AI-powered protection against phishing, scams, fake jobs & social engineering.<br/>
+        Because the strongest firewall is an <strong>informed human.</strong>
+      </p>
+      <div class="hero-btns">
+        <a href="pages/analyzer.html" class="btn btn-primary">ANALYZE A MESSAGE</a>
+        <a href="pages/training.html" class="btn btn-outline">TEST YOUR SKILLS</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="shield-anim">
+        <div class="shield-ring r1"></div>
+        <div class="shield-ring r2"></div>
+        <div class="shield-ring r3"></div>
+        <div class="shield-core">🛡️</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-num" id="stat-analyses">--</span><span class="stat-label">Analyses Done</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat-threats">--</span><span class="stat-label">Threats Detected</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat-trainings">--</span><span class="stat-label">Training Sessions</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat-accuracy">--</span><span class="stat-label">Accuracy Rate</span></div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="section-title">CORE MODULES</div>
+    <div class="features-grid">
+
+      <div class="feature-card" onclick="window.location='pages/analyzer.html'">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-tag">MODULE 01</div>
+        <h3>Real Scam Analyzer</h3>
+        <p>Paste any suspicious email, WhatsApp message, or SMS. Our AI scans for red flags, urgency tactics, phishing links, and suspicious patterns — giving you a real-time Risk Score.</p>
+        <div class="feature-arrow">→</div>
+      </div>
+
+      <div class="feature-card" onclick="window.location='pages/training.html'">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-tag">MODULE 02</div>
+        <h3>Training Simulator</h3>
+        <p>Test yourself against real-world scam scenarios — phishing emails, fake job offers, and scam messages. Build a Vulnerability Score to understand your weak spots.</p>
+        <div class="feature-arrow">→</div>
+      </div>
+
+      <div class="feature-card" onclick="window.location='pages/damage.html'">
+        <div class="feature-icon">🚨</div>
+        <div class="feature-tag">MODULE 03</div>
+        <h3>Damage Control</h3>
+        <p>Already been scammed? Get an instant Cyber First-Aid plan — step-by-step recovery actions, emergency helplines, and damage prevention tailored to your situation.</p>
+        <div class="feature-arrow">→</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="section-title">HOW IT WORKS</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-text">
+          <h4>Input</h4>
+          <p>Paste a suspicious message or pick a training scenario</p>
+        </div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-text">
+          <h4>Analyze</h4>
+          <p>AI scans for red flags, patterns & behavioral signals</p>
+        </div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-text">
+          <h4>Score</h4>
+          <p>Get a Risk Score with detailed breakdown</p>
+        </div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-text">
+          <h4>Act</h4>
+          <p>Follow actionable recommendations to stay safe</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>🛡️ CybRisk Guardian &nbsp;|&nbsp; Built for Cybersecurity Awareness &nbsp;|&nbsp; Emergency: <strong>1930</strong> (Cyber Crime Helpline)</p>
+  </footer>
+
+  <script>
+    const API = "http://localhost:8000";
+    fetch(`${API}/api/stats`).then(r => r.json()).then(d => {
+      document.getElementById("stat-analyses").textContent = d.total_analyses;
+      document.getElementById("stat-threats").textContent = d.high_risk_detected;
+      document.getElementById("stat-trainings").textContent = d.training_sessions;
+      document.getElementById("stat-accuracy").textContent = d.training_accuracy + "%";
+    }).catch(() => {
+      ["stat-analyses","stat-threats","stat-trainings","stat-accuracy"].forEach(id => {
+        document.getElementById(id).textContent = "0";
+      });
+      document.getElementById("stat-accuracy").textContent = "0%";
+    });
+  </script>
+
+</body>
+</html>

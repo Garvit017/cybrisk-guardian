@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scam Analyzer — CybRisk Guardian</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="shield-icon">🛡️</span>
+    <span class="brand-text">CYBRISK <span class="accent">GUARDIAN</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="../index.html" class="nav-link">HOME</a>
+    <a href="analyzer.html" class="nav-link active">SCAM ANALYZER</a>
+    <a href="training.html" class="nav-link">TRAINING</a>
+    <a href="damage.html" class="nav-link">DAMAGE CONTROL</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-title">🔍 Real Scam Analyzer</div>
+  <div class="page-subtitle">PASTE SUSPICIOUS MESSAGE → GET INSTANT AI RISK ANALYSIS</div>
+
+  <div class="card">
+    <label class="input-label">PASTE YOUR SUSPICIOUS MESSAGE BELOW</label>
+    <textarea class="hud-textarea" id="msg-input" placeholder="Paste the suspicious email, SMS, WhatsApp message, or job offer here..."></textarea>
+    <div style="display:flex; gap:1rem; margin-top:1rem; align-items:center;">
+      <button class="btn btn-primary" onclick="analyzeMessage()">ANALYZE NOW</button>
+      <button class="btn btn-outline" onclick="loadSample()">LOAD SAMPLE</button>
+      <div class="loading hidden" id="loading">
+        <div class="spinner"></div> Scanning message...
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden">
+    <div class="card">
+      <div class="divider-label">RISK ASSESSMENT</div>
+      <div class="risk-score-display" id="score-display">--</div>
+      <div class="risk-bar-bg" style="margin-bottom:0.8rem;">
+        <div class="risk-bar-fill" id="risk-bar" style="width:0%;"></div>
+      </div>
+      <span class="risk-level-badge" id="risk-badge">SCANNING...</span>
+      <p id="risk-summary" style="color:var(--text-dim); font-size:0.9rem; margin-top:0.5rem;"></p>
+    </div>
+
+    <div class="card">
+      <div class="divider-label">⚠️ RED FLAGS DETECTED</div>
+      <ul class="flags-list" id="flags-list"></ul>
+    </div>
+
+    <div class="card">
+      <div class="divider-label">✅ RECOMMENDED ACTIONS</div>
+      <ul class="recs-list" id="recs-list"></ul>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  🛡️ CybRisk Guardian &nbsp;|&nbsp; Cyber Crime Helpline: <strong>1930</strong>
+</footer>
+
+<script>
+const API = "http://localhost:8000";
+
+const SAMPLES = [
+  `Subject: URGENT - Your SBI account will be SUSPENDED!\n\nDear Customer,\nWe have detected unusual login activity on your account. Your account will be suspended within 24 hours unless you verify your details immediately.\n\nClick here to verify: http://sbi-secure-login.xyz/verify\n\nPlease provide your ATM PIN and OTP to restore access.\n\nRegards,\nSBI Security Team`,
+  `Congratulations! You have been selected as a WINNER in Google Lucky Draw 2025!\nYour prize: ₹25,00,000 cash.\nTo claim, send your Full Name, Bank Account Number, IFSC Code and a processing fee of ₹1,999 to customs_india@gmail.com\nOffer expires in 48 hours. Act NOW!`,
+  `WORK FROM HOME! Earn ₹800-1500 per hour by completing simple tasks on your mobile.\nNo experience required. Registration fee: ₹499 only.\nGuaranteed daily payout. Contact on WhatsApp: +91-9988776655`
+];
+
+function loadSample() {
+  document.getElementById("msg-input").value = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+}
+
+async function analyzeMessage() {
+  const msg = document.getElementById("msg-input").value.trim();
+  if (!msg) { alert("Please paste a message to analyze."); return; }
+
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
+
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
+    });
+    const data = await res.json();
+    displayResults(data);
+  } catch (e) {
+    alert("Backend not connected. Please start the FastAPI server.");
+  } finally {
+    document.getElementById("loading").classList.add("hidden");
+  }
+}
+
+function displayResults(data) {
+  const { risk_score, risk_level, red_flags, recommendations } = data;
+
+  // Score
+  document.getElementById("score-display").textContent = risk_score + "/100";
+  document.getElementById("score-display").style.color =
+    risk_level === "HIGH" ? "var(--danger)" : risk_level === "MEDIUM" ? "var(--warning)" : "var(--safe)";
+
+  // Bar
+  setTimeout(() => {
+    document.getElementById("risk-bar").style.width = risk_score + "%";
+  }, 100);
+
+  // Badge
+  const badge = document.getElementById("risk-badge");
+  badge.textContent = risk_level + " RISK";
+  badge.className = `risk-level-badge badge-${risk_level}`;
+
+  // Summary
+  const summaries = {
+    HIGH: "🚨 This message shows strong indicators of a scam. Do NOT interact with it.",
+    MEDIUM: "⚠️ This message has suspicious elements. Verify before taking any action.",
+    LOW: "✅ This message appears relatively safe, but always exercise caution."
+  };
+  document.getElementById("risk-summary").textContent = summaries[risk_level];
+
+  // Red flags
+  const flagsList = document.getElementById("flags-list");
+  flagsList.innerHTML = red_flags.map(f => `<li class="flag-item">🚩 ${f}</li>`).join("");
+
+  // Recommendations
+  const recsList = document.getElementById("recs-list");
+  recsList.innerHTML = recommendations.map(r => `<li class="rec-item">→ ${r}</li>`).join("");
+
+  document.getElementById("results").classList.remove("hidden");
+  document.getElementById("results").scrollIntoView({ behavior: "smooth" });
+}
+</script>
+
+</body>
+</html>

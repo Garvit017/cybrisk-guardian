@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Training Simulator — CybRisk Guardian</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="shield-icon">🛡️</span>
+    <span class="brand-text">CYBRISK <span class="accent">GUARDIAN</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="../index.html" class="nav-link">HOME</a>
+    <a href="analyzer.html" class="nav-link">SCAM ANALYZER</a>
+    <a href="training.html" class="nav-link active">TRAINING</a>
+    <a href="damage.html" class="nav-link">DAMAGE CONTROL</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-title">🎯 Training Simulator</div>
+  <div class="page-subtitle">CAN YOU SPOT THE SCAM? TEST YOUR CYBER INSTINCTS</div>
+
+  <!-- Vulnerability Score Card -->
+  <div class="card" style="display:flex; gap:2rem; align-items:center; flex-wrap:wrap;">
+    <div class="vuln-gauge" style="flex:1; min-width:180px;">
+      <div class="divider-label" style="margin-top:0;">VULNERABILITY SCORE</div>
+      <div class="vuln-num" id="vuln-score" style="color:var(--safe);">0%</div>
+      <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-dim); margin-top:4px;">LOWER IS BETTER</div>
+    </div>
+    <div style="flex:2; min-width:200px;">
+      <div style="display:flex; gap:2rem; margin-bottom:0.8rem; flex-wrap:wrap;">
+        <div><span style="font-family:var(--font-display); font-size:1.5rem; color:var(--safe);" id="correct-count">0</span><br/><span style="font-family:var(--font-mono); font-size:0.65rem; color:var(--text-dim);">CORRECT</span></div>
+        <div><span style="font-family:var(--font-display); font-size:1.5rem; color:var(--danger);" id="wrong-count">0</span><br/><span style="font-family:var(--font-mono); font-size:0.65rem; color:var(--text-dim);">MISSED</span></div>
+        <div><span style="font-family:var(--font-display); font-size:1.5rem; color:var(--accent);" id="total-count">0</span><br/><span style="font-family:var(--font-mono); font-size:0.65rem; color:var(--text-dim);">TOTAL</span></div>
+      </div>
+      <div class="risk-bar-bg"><div class="risk-bar-fill" id="accuracy-bar" style="width:0%; background:linear-gradient(90deg,var(--safe),var(--accent));"></div></div>
+    </div>
+  </div>
+
+  <!-- Scenario Type Selector -->
+  <div class="card">
+    <div class="divider-label" style="margin-top:0;">SELECT SCENARIO TYPE</div>
+    <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+      <button class="vote-btn legit" id="type-phishing" onclick="selectType('phishing_email')" style="flex:none; width:auto; padding:0.6rem 1.2rem;">📧 Phishing Email</button>
+      <button class="vote-btn legit" id="type-job" onclick="selectType('fake_job')" style="flex:none; width:auto; padding:0.6rem 1.2rem;">💼 Fake Job</button>
+      <button class="vote-btn legit" id="type-sms" onclick="selectType('scam_message')" style="flex:none; width:auto; padding:0.6rem 1.2rem;">💬 Scam Message</button>
+    </div>
+
+    <div class="divider-label">SCENARIO</div>
+    <div class="scenario-box" id="scenario-box">
+      <span style="color:var(--text-dim);">Click "LOAD SCENARIO" to begin training...</span>
+    </div>
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem;">
+      <button class="btn btn-outline" onclick="loadScenario()">LOAD SCENARIO</button>
+      <div class="loading hidden" id="loading-scenario">
+        <div class="spinner"></div> Loading...
+      </div>
+    </div>
+
+    <div class="vote-btns" id="vote-section" style="display:none;">
+      <button class="vote-btn legit" onclick="submitAnswer('legit')">✅ LEGITIMATE</button>
+      <button class="vote-btn scam" onclick="submitAnswer('scam')">🚨 SCAM / SUSPICIOUS</button>
+    </div>
+  </div>
+
+  <!-- Result Panel -->
+  <div id="result-panel" class="card hidden">
+    <div class="divider-label" style="margin-top:0;">RESULT</div>
+    <div id="result-msg" style="font-family:var(--font-display); font-size:1.1rem; margin-bottom:1rem;"></div>
+    <div id="explanation-box" style="background:rgba(0,0,0,0.3); border-left:3px solid var(--accent); padding:1rem; font-size:0.9rem; color:var(--text); border-radius:0 4px 4px 0; margin-bottom:1.5rem;"></div>
+    <button class="btn btn-primary" onclick="nextScenario()">NEXT SCENARIO →</button>
+  </div>
+</div>
+
+<footer class="footer">
+  🛡️ CybRisk Guardian &nbsp;|&nbsp; Cyber Crime Helpline: <strong>1930</strong>
+</footer>
+
+<script>
+const API = "http://localhost:8000";
+let currentScenario = null;
+let currentType = "phishing_email";
+let correct = 0, wrong = 0;
+
+function selectType(type) {
+  currentType = type;
+  ["phishing_email","fake_job","scam_message"].forEach(t => {
+    const id = t === "phishing_email" ? "type-phishing" : t === "fake_job" ? "type-job" : "type-sms";
+    document.getElementById(id).style.borderColor = t === type ? "var(--accent)" : "";
+    document.getElementById(id).style.color = t === type ? "var(--accent)" : "";
+  });
+}
+
+async function loadScenario() {
+  document.getElementById("loading-scenario").classList.remove("hidden");
+  document.getElementById("result-panel").classList.add("hidden");
+  document.getElementById("vote-section").style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/api/training/scenario?type=${currentType}`);
+    currentScenario = await res.json();
+    document.getElementById("scenario-box").textContent = currentScenario.text;
+    document.getElementById("vote-section").style.display = "flex";
+  } catch(e) {
+    alert("Backend not connected. Please start the FastAPI server.");
+  } finally {
+    document.getElementById("loading-scenario").classList.add("hidden");
+  }
+}
+
+async function submitAnswer(answer) {
+  if (!currentScenario) return;
+  document.getElementById("vote-section").style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/api/training/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scenario_id: 0,
+        scenario_type: currentScenario.scenario_type,
+        scenario_text: currentScenario.text,
+        user_answer: answer,
+        correct_answer: currentScenario.correct_answer
+      })
+    });
+    const data = await res.json();
+    showResult(data, answer);
+  } catch(e) {
+    // Fallback local scoring
+    const isCorrect = answer === currentScenario.correct_answer;
+    showResultLocal(isCorrect);
+  }
+}
+
+function showResult(data, userAnswer) {
+  const isCorrect = data.correct;
+  if (isCorrect) correct++; else wrong++;
+
+  const msg = document.getElementById("result-msg");
+  msg.textContent = data.message;
+  msg.className = isCorrect ? "result-correct" : "result-wrong";
+
+  document.getElementById("explanation-box").textContent = "💡 " + currentScenario.explanation;
+  document.getElementById("result-panel").classList.remove("hidden");
+
+  // Update scores
+  const total = correct + wrong;
+  document.getElementById("correct-count").textContent = correct;
+  document.getElementById("wrong-count").textContent = wrong;
+  document.getElementById("total-count").textContent = total;
+
+  const accuracy = total ? Math.round((correct / total) * 100) : 0;
+  const vuln = 100 - accuracy;
+  document.getElementById("vuln-score").textContent = vuln + "%";
+  document.getElementById("vuln-score").style.color =
+    vuln < 30 ? "var(--safe)" : vuln < 60 ? "var(--warning)" : "var(--danger)";
+  document.getElementById("accuracy-bar").style.width = accuracy + "%";
+
+  document.getElementById("result-panel").scrollIntoView({ behavior:"smooth" });
+}
+
+function showResultLocal(isCorrect) {
+  if (isCorrect) correct++; else wrong++;
+  const msg = document.getElementById("result-msg");
+  msg.textContent = isCorrect ? "✅ Correct! You identified this successfully." : "❌ Incorrect. Scammers counted on you missing that.";
+  msg.className = isCorrect ? "result-correct" : "result-wrong";
+  document.getElementById("explanation-box").textContent = "💡 " + currentScenario.explanation;
+  document.getElementById("result-panel").classList.remove("hidden");
+
+  const total = correct + wrong;
+  document.getElementById("correct-count").textContent = correct;
+  document.getElementById("wrong-count").textContent = wrong;
+  document.getElementById("total-count").textContent = total;
+  const vuln = total ? 100 - Math.round((correct / total) * 100) : 0;
+  document.getElementById("vuln-score").textContent = vuln + "%";
+  document.getElementById("vuln-score").style.color =
+    vuln < 30 ? "var(--safe)" : vuln < 60 ? "var(--warning)" : "var(--danger)";
+  document.getElementById("accuracy-bar").style.width = (100 - vuln) + "%";
+}
+
+function nextScenario() {
+  document.getElementById("result-panel").classList.add("hidden");
+  loadScenario();
+}
+
+selectType("phishing_email");
+</script>
+
+</body>
+</html>
