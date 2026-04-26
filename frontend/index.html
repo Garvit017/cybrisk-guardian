@@ -137,7 +137,7 @@
   </footer>
 
   <script>
-    const API = "http://localhost:8000";
+    const API = "https://cybrisk-guardian.onrender.com";
     fetch(`${API}/api/stats`).then(r => r.json()).then(d => {
       document.getElementById("stat-analyses").textContent = d.total_analyses;
       document.getElementById("stat-threats").textContent = d.high_risk_detected;
